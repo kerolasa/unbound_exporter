@@ -346,6 +346,18 @@ var (
 			prometheus.GaugeValue,
 			[]string{"buffer"},
 			"^mem\\.http\\.(\\w+)$"),
+		newUnboundMetric(
+			"infra_cache_count",
+			"The number of items in the infra cache",
+			prometheus.GaugeValue,
+			nil,
+			"^infra\\.cache\\.count$"),
+		newUnboundMetric(
+			"key_cache_count",
+			"The number of items in the key cache",
+			prometheus.GaugeValue,
+			nil,
+			"^key\\.cache\\.count$"),
 	}
 )
 
