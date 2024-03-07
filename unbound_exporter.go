@@ -34,6 +34,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/letsencrypt/unbound_exporter/build"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
 )
@@ -612,6 +613,8 @@ func main() {
 		panic(err)
 	}
 	prometheus.MustRegister(exporter)
+	prometheus.Unregister(collectors.NewGoCollector())
+	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
