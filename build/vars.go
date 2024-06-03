@@ -26,3 +26,6 @@ func GetBranch() (BuildBranch string) {
 
 	return Unspecified
 }
+
+// Version tells to prometheus which version of the unbound_exporter is runningc
+var Version string = "0.0.0"

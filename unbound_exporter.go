@@ -25,7 +25,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -360,6 +359,13 @@ var (
 			nil,
 			"^key\\.cache\\.count$"),
 	}
+	buildInfo = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "build_info",
+			Help: "A metric with a constant '1' value labeled by running version.",
+		},
+		[]string{"version"},
+	)
 )
 
 type unboundMetric struct {
@@ -602,11 +608,12 @@ func main() {
 		unboundKey    = flag.String("unbound.key", "/etc/unbound/unbound_control.key", "Unbound client key.")
 		threads       = flag.Bool("threads", true, "Export per thread metrics.")
 	)
+
 	flag.Parse()
 
 	_ = level.Info(log).Log(
 		"msg", "Starting unbound_exporter",
-		"version", fmt.Sprintf("(version=%s, branch=%s, revision=%s)", runtime.Version(), build.GetBranch(), build.GetID()),
+		"version", fmt.Sprintf("(version=%s, branch=%s, revision=%s)", build.Version, build.GetBranch(), build.GetID()),
 	)
 	exporter, err := NewUnboundExporter(*unboundHost, *unboundCa, *unboundCert, *unboundKey, *threads)
 	if err != nil {
@@ -615,6 +622,8 @@ func main() {
 	prometheus.MustRegister(exporter)
 	prometheus.Unregister(collectors.NewGoCollector())
 	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	prometheus.MustRegister(buildInfo)
+	buildInfo.WithLabelValues(build.Version).Set(1)
 
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
